@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>詐騙資料篩選</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    .container {
+      outline: 4px solid #8f8f8f;
+      padding: 10px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #post-form input[type="radio"]{
+      accent-color: red;
+    }
+    #article-content {
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>詐騙資料篩選</h1>
+  <h3>文章內容</h3>
+  <div class="container">
+    <article id="article-content">文章內文</article>
+    <form id="post-form" action="" method="POST" onsubmit="">
+      <label>
+        <input type="radio" name="label" value=1 required>
+        是
+      </label>
+      <label>
+        <input type="radio" name="label" value=0 required>
+        否
+      </label>
+      <label>
+        <input type="radio" name="label" value=2 required>
+        無法判斷
+      </label>
+      <input type="submit" value="確定">
+    </form>
+  </div>  
+  <script>
+    const API = "http://localhost:8000/"
+    const ARTICLE_API = API + "article/nocomment";
+    const POST_API = API;
+
+    function fetchArticle(){
+      return fetch(ARTICLE_API)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          return data;
+        });
+    }
+  
+    function updateArticle(){
+      fetchArticle()
+        .then(result => {
+          console.log(result);
+          if (result == null){
+            alert("已無需要篩選的內容, 謝謝泥!");
+            return false;
+          }
+          const articleId = result[0];
+          const articleContent = result[1];
+
+          const contentElement = document.getElementById("article-content");
+          contentElement.innerHTML = articleContent;
+          console.log("OK");
+
+          const formElement = document.getElementById("post-form");
+          formElement.action = `${POST_API}${articleId}`; 
+
+          return true;
+        });
+    }
+
+    window.onload = updateArticle();
+  </script>
+</body>
+</html>
+

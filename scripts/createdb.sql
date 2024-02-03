@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS Data (
+  Id TEXT PRIMARY KEY,
+  Content TEXT,
+  Label INTEGER
+);
