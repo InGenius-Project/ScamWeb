@@ -1,8 +1,8 @@
 from fastapi import FastAPI, HTTPException, Form
-from fastapi.responses import FileResponse, RedirectResponse
-from service import DataService, DataEntity
 from typing import List, Dict, Annotated
-from constant import HTMLPages
+from fastapi.responses import FileResponse, RedirectResponse
+from src.service import DataService, DataEntity
+from src.constant import HTMLPages
 
 app = FastAPI()
 _dataservice = DataService()

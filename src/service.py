@@ -1,7 +1,5 @@
 import sqlite3
-
-from pydantic_core.core_schema import nullable_schema
-from constant import DBInfo
+from src.constant import DBInfo
 
 
 class DataEntity:

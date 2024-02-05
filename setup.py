@@ -1,5 +1,5 @@
 import sqlite3
-from constant import DBInfo
+from src.constant import DBInfo
 
 
 def main():

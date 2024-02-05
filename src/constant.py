@@ -1,9 +1,9 @@
 class DBInfo:
     dbname = "ScamDataDB"
     connectname = f"{dbname}.db"
-    init_script_path = "scripts/createdb.sql"
+    init_script_path = "src/scripts/createdb.sql"
 
 
 class HTMLPages:
     class Path:
-        home = "pages/HomePage.html"
+        home = "src/pages/HomePage.html"
