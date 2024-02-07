@@ -15,6 +15,7 @@ BLACK_IP_LIST: set[str] = set()
 
 def refresh_black_list() -> None:
     with open(BLACK_IP_LIST_FILEPATH, "r") as file:
+        BLACK_IP_LIST.clear()
         BLACK_IP_LIST.update(set(json.load(file)))
 
 
