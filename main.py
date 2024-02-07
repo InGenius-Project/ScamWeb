@@ -12,14 +12,12 @@ def HTMLResponse(path: str):
     return FileResponse(path, media_type="text/html")
 
 
-@app.exception_handler(HTTPException)
-async def not_found_exception_handler(request, exc):
-    if exc.status_code == 404:
-        return RedirectResponse(url="/not_found")
-    return exc
+@app.exception_handler(404)
+async def not_found_exception_handler(_, __):
+    return RedirectResponse(url="/err/not_found")
 
 
-@app.get("/not_found")
+@app.get("/err/not_found")
 async def not_found():
     return {"message": "Page not found. To Hacker, go tryhackme.com, not here."}
 
