@@ -1,25 +1,55 @@
-from fastapi import FastAPI, HTTPException, Form
+from fastapi import FastAPI, HTTPException, Form, Request
 from typing import List, Dict, Annotated
 from fastapi.responses import FileResponse, RedirectResponse
 from src.service import DataService, DataEntity
 from src.constant import HTMLPages
+import json
 
 app = FastAPI()
 _dataservice = DataService()
+
+BLACK_IP_LIST_FILEPATH = "./src/black_list.json"
+BLACK_IP_LIST: set[str] = set()
+
+
+def refresh_black_list() -> None:
+    with open(BLACK_IP_LIST_FILEPATH, "r") as file:
+        BLACK_IP_LIST.union(set(json.load(file)))
+
+
+def add_black_list(ip: str):
+    BLACK_IP_LIST.add(ip)
+    open(BLACK_IP_LIST_FILEPATH, "w").write(str(list(BLACK_IP_LIST)).replace("'", '"'))
 
 
 def HTMLResponse(path: str):
     return FileResponse(path, media_type="text/html")
 
 
+@app.middleware("http")
+async def check_blacklist(request: Request, call_next):
+    if request.client is None:
+        raise HTTPException(status_code=400, detail="Invalid request.")
+    client_ip = request.client.host
+    refresh_black_list()
+    if client_ip in BLACK_IP_LIST:
+        raise HTTPException(status_code=403, detail="You have been banned.")
+    response = await call_next(request)
+    return response
+
+
 @app.exception_handler(404)
-async def not_found_exception_handler(_, __):
+async def not_found_exception_handler(request: Request, __):
+    if request.client is not None:
+        add_black_list(request.client.host)
     return RedirectResponse(url="/err/not_found")
 
 
 @app.get("/err/not_found")
 async def not_found():
-    return {"message": "Page not found. To Hacker, go tryhackme.com, not here."}
+    return {
+        "message": "You have been permanently banned. If any question, please contact the admin."
+    }
 
 
 @app.get("/page/home")
