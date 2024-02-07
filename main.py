@@ -1,5 +1,6 @@
-from fastapi import FastAPI, HTTPException, Form, Request
+from fastapi import FastAPI, HTTPException, Form, Request, Response
 from typing import List, Dict, Annotated
+from fastapi.exceptions import ResponseValidationError
 from fastapi.responses import FileResponse, RedirectResponse
 from src.service import DataService, DataEntity
 from src.constant import HTMLPages
@@ -26,23 +27,26 @@ def HTMLResponse(path: str):
     return FileResponse(path, media_type="text/html")
 
 
+@app.exception_handler(HTTPException)
+async def not_found_exception_handler(request: Request, exc):
+    if exc.status_code == 404:
+        if request.client is not None:
+            add_black_list(request.client.host)
+    elif exc.status_code == 400:
+        return Response(status_code=400, content={"message": "Bad Request"})
+    return RedirectResponse(url="/err/not_found")
+
+
 @app.middleware("http")
 async def check_blacklist(request: Request, call_next):
     if request.client is None:
-        raise HTTPException(status_code=400, detail="Invalid request.")
+        return Response(status_code=400, content="Invalid request.")
     client_ip = request.client.host
     refresh_black_list()
     if client_ip in BLACK_IP_LIST:
-        raise HTTPException(status_code=403, detail="You have been banned.")
+        return Response(status_code=403, content="You have been banned.")
     response = await call_next(request)
     return response
-
-
-@app.exception_handler(404)
-async def not_found_exception_handler(request: Request, __):
-    if request.client is not None:
-        add_black_list(request.client.host)
-    return RedirectResponse(url="/err/not_found")
 
 
 @app.get("/err/not_found")
