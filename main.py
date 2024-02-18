@@ -1,9 +1,9 @@
 from fastapi import FastAPI, HTTPException, Form, Request, Response
 from typing import List, Dict, Annotated
-from fastapi.exceptions import ResponseValidationError
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
 from src.service import DataService, DataEntity
 from src.constant import HTMLPages
+import uvicorn
 import json
 
 app = FastAPI()
@@ -28,13 +28,10 @@ def HTMLResponse(path: str):
     return FileResponse(path, media_type="text/html")
 
 
-@app.exception_handler(HTTPException)
+@app.exception_handler(404)
 async def not_found_exception_handler(request: Request, exc):
-    if exc.status_code == 404:
-        if request.client is not None:
-            add_black_list(request.client.host)
-    elif exc.status_code == 400:
-        return Response(status_code=400, content={"message": "Bad Request"})
+    if request.client is not None:
+        add_black_list(request.client.host)
     return RedirectResponse(url="/err/not_found")
 
 
@@ -63,8 +60,9 @@ async def home():
 
 
 @app.get("/")
-async def root():
-    return _dataservice.get_all()
+async def root(request: Request):
+    add_black_list(request.client.host)
+    return "You have been banned" 
 
 
 @app.get("/id")
@@ -106,3 +104,7 @@ async def change_label(id: str, label: Annotated[int, Form()]):
     _dataservice.set_label(id, label)
     _dataservice.save_change()
     return RedirectResponse(url="/page/home", status_code=302)
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
