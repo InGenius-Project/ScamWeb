@@ -60,6 +60,13 @@ class DataService:
         id_list = [x[0] for x in result]
         return id_list
 
+    def get_by_label(self, label: int):
+        command = "SELECT id FROM Data WHERE label = ?;"
+        self.cursor.execute(command, (label,))
+        result = self.cursor.fetchall()
+        id_list = [x[0] for x in result]
+        return id_list
+
     def get_nocomment(self):
         command = "SELECT * FROM Data WHERE label = ? ORDER BY label ASC LIMIT 1;"
         self.cursor.execute(command, (DataEntity.LabelType.NOCOMMENT,))

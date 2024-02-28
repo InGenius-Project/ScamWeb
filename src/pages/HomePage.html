@@ -32,6 +32,7 @@
         >無法判斷</strong
       >
     </p>
+    <p id="statistic">未處理資料: 0筆<br>詐騙資料: 0筆<br>非詐騙資料: 0筆<br>已處理資料: 0筆</p>
     <div class="container">
       <article id="article-content">暫無資料</article>
       <form id="post-form" action="" method="POST" onsubmit="">
@@ -53,6 +54,7 @@
     <script>
       const API = "http://150.117.18.40:8000/";
       const ARTICLE_API = API + "article/nocomment";
+      const LABEL_API = API + "label/";
       const POST_API = API;
 
       function fetchArticle() {
@@ -70,7 +72,6 @@
 
       function updateArticle() {
         fetchArticle().then((result) => {
-          console.log(result);
           if (result == null) {
             alert("已無需要篩選的內容, 謝謝泥!");
             return false;
@@ -80,7 +81,6 @@
 
           const contentElement = document.getElementById("article-content");
           contentElement.innerHTML = articleContent;
-          console.log("OK");
 
           const formElement = document.getElementById("post-form");
           formElement.action = `${POST_API}${articleId}`;
@@ -89,7 +89,26 @@
         });
       }
 
-      window.onload = updateArticle();
+     async function getLabelData(label) {
+        const res = await fetch(LABEL_API + label);
+        const data = await res.json();
+        return data.length;
+      }
+
+      async function updateStatistic() {
+        const unmark = await getLabelData(3);
+        const scam = await getLabelData(1);
+        const notscam = await getLabelData(0);
+        const all = parseInt(scam) + parseInt(notscam);
+        const contentElement = document.getElementById("statistic");
+        contentElement.innerHTML =`未處理資料: ${unmark}筆<br>詐騙資料: ${scam}筆<br>非詐騙資料: ${notscam}筆<br>已處理資料: ${all}筆`;
+      }
+
+      window.onload = async function() {
+        updateArticle();
+        await updateStatistic();
+        const intervalId = setInterval(updateStatistic, 5000);
+      }
     </script>
   </body>
 </html>

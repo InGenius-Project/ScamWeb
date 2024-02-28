@@ -20,6 +20,8 @@ def refresh_black_list() -> None:
 
 
 def add_black_list(ip: str):
+    # FIXME: add black list
+    return
     BLACK_IP_LIST.add(ip)
     open(BLACK_IP_LIST_FILEPATH, "w").write(str(list(BLACK_IP_LIST)).replace("'", '"'))
 
@@ -74,6 +76,9 @@ async def get_all_id():
 async def get_by_id(id: str):
     return _dataservice.get_by_id(id)
 
+@app.get("/label/{label}")
+async def get_by_label(label: int):
+    return _dataservice.get_by_label(label)
 
 @app.post("/")
 async def post(data_list: List[Dict]):
